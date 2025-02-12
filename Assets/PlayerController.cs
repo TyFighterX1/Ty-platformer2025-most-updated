@@ -15,6 +15,8 @@ public class PlayerController : MonoBehaviour
     private bool jump = false;
     private float fireRate = 0.3f;
     private float nextFire = 0f;
+    private bool facingright = true;
+    private AudioSource audiosource;
 
     //public
     public float speed = 3;
@@ -30,6 +32,7 @@ public class PlayerController : MonoBehaviour
         animator = GetComponent<Animator>();                 // for animation
         sprite_r = GetComponent<SpriteRenderer>();           // for sprite flip
         body = GetComponent<Rigidbody2D>();                  // to apply force to player
+        audiosource = GetComponent<AudioSource>();
     }
 
     // Note that we changed this from Update to FixedUpdate as we are now working directly
@@ -68,10 +71,16 @@ public class PlayerController : MonoBehaviour
     public void Update()
     {
         // to make sure player is facing direction they are heading
-        if (movementVector.x < 0) // if we are walking to the left
-            sprite_r.flipX = true;
-        else if (movementVector.x > 0) //if we are walking to the right
-            sprite_r.flipX = false;
+        if (movementVector.x < 0 && facingright) // if we are walking to the left
+        {
+            Flip(); //flips firing point and sprite
+            facingright = false;
+        }
+        else if (movementVector.x > 0 && !facingright)//if we are walking to the right
+        {
+            Flip();
+            facingright = true;
+        }
     }
 
     public void OnMove(InputValue movementValue)
@@ -94,7 +103,8 @@ public class PlayerController : MonoBehaviour
         { 
         nextFire = Time.time + fireRate;
         animator.SetTrigger("isShooting");
-        Instantiate(fire, firePoint.position, firePoint.rotation);
+        Instantiate(fire, firePoint.position, facingright ? firePoint.rotation : Quaternion.Euler(0, 180, 0));
+        audiosource.Play();
         }
     }
     public void OnCollisionEnter2D(Collision2D collision)
@@ -125,5 +135,19 @@ public class PlayerController : MonoBehaviour
             GameManager.instance.DecreaseLives();
             SceneManager.LoadScene(0);
         }
+    }
+    public Vector2 GetDirection()
+    {
+        if (facingright)
+            return Vector2.right;
+        else
+            return Vector2.left;
+    }
+
+   void Flip()
+    {
+        Vector3 theScale = transform.localScale;
+        theScale.x = theScale.x * -1; //invert
+        transform.localScale = theScale;
     }
 }
