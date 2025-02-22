@@ -9,6 +9,8 @@ TagManager:
   - player
   - fire
   - enemy
+  - Pickup
+  - Win
   layers:
   - Default
   - TransparentFX

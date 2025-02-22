@@ -25,6 +25,9 @@ public class PlayerController : MonoBehaviour
     public float gravityMultiplier = 2f;
     public GameObject fire; //for our bullets
     public Transform firePoint;
+    public int maxHealth = 3;
+    public int currentHealth;
+    public HealthBar healthBar;
 
     // Start is called before the first frame update
     void Start()
@@ -33,6 +36,8 @@ public class PlayerController : MonoBehaviour
         sprite_r = GetComponent<SpriteRenderer>();           // for sprite flip
         body = GetComponent<Rigidbody2D>();                  // to apply force to player
         audiosource = GetComponent<AudioSource>();
+        currentHealth = maxHealth;
+        healthBar.SetMaxHealth(maxHealth);
     }
 
     // Note that we changed this from Update to FixedUpdate as we are now working directly
@@ -81,6 +86,11 @@ public class PlayerController : MonoBehaviour
             Flip();
             facingright = true;
         }
+        if (currentHealth <= 0)
+        {
+            GameManager.instance.DecreaseLives();
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
     }
 
     public void OnMove(InputValue movementValue)
@@ -114,6 +124,17 @@ public class PlayerController : MonoBehaviour
             isGrounded = true;
             Debug.Log("Touching ground");
         }
+        if (collision.gameObject.CompareTag("Pickup"))
+        {
+            SceneManager.LoadScene("Level 2");
+            Debug.Log("Touching pickup");
+        }
+        if (collision.gameObject.CompareTag("Win"))
+            SceneManager.LoadScene("Win Screen");
+        if (collision.gameObject.CompareTag("enemy"))
+        {
+            TakeDamage(1);
+        }
     }
 
     IEnumerator LerpJump()
@@ -133,8 +154,9 @@ public class PlayerController : MonoBehaviour
         if (collision.gameObject.CompareTag("boundary"))
         {
             GameManager.instance.DecreaseLives();
-            SceneManager.LoadScene(0);
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
+
     }
     public Vector2 GetDirection()
     {
@@ -149,5 +171,11 @@ public class PlayerController : MonoBehaviour
         Vector3 theScale = transform.localScale;
         theScale.x = theScale.x * -1; //invert
         transform.localScale = theScale;
+    }
+    void TakeDamage(int damage)
+    {
+        currentHealth -= damage;
+
+        healthBar.SetHealth(currentHealth);
     }
 }

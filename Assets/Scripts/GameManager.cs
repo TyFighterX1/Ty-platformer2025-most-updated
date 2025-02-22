@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -22,9 +23,18 @@ public class GameManager : MonoBehaviour
     {
         lives--;
     }
-
+    public void Update()
+    {
+        if (lives <= 0)
+        {
+            SceneManager.LoadScene("Level 1");
+            lives = 3;
+        }
+    }
     public int GetLives()
     {
         return lives;
     }
+    
+    
 }
